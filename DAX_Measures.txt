@@ -1,0 +1,57 @@
+-- Copy each measure into Modeling > New measure in Power BI Desktop.
+
+Total Sales =
+SUM(FactSales[SalesAmount])
+
+Transactions = DISTINCTCOUNT(FactSales[TransactionID])
+
+Customers = DISTINCTCOUNT(FactSales[CustomerID])
+
+Average Transaction Value = DIVIDE([Total Sales], [Transactions])
+
+Average Discount Rate = AVERAGE(FactSales[DiscountRate])
+
+Promotional Sales =
+CALCULATE(
+    [Total Sales],
+    FactSales[PromotionID] <> "PROMO-00"
+)
+
+Promotional Transactions =
+CALCULATE(
+    [Transactions],
+    FactSales[PromotionID] <> "PROMO-00"
+)
+
+Promotional Sales Share =DIVIDE([Promotional Sales], [Total Sales])
+
+Sales per Customer =DIVIDE([Total Sales], [Customers])
+
+Review Count =COUNT(FactReviews[Rating])
+
+Average Rating =AVERAGE(FactReviews[Rating])
+
+High Ratings (4 and 5) =CALCULATE([Review Count], FactReviews[Rating] >= 4)
+
+High Rating Share =DIVIDE([High Ratings (4 and 5)], [Review Count])
+
+Low Ratings (3) =CALCULATE([Review Count], FactReviews[Rating] = 3)
+
+Repeat Customers =
+COUNTROWS(
+    FILTER(
+        VALUES(FactSales[CustomerID]),
+        CALCULATE(DISTINCTCOUNT(FactSales[TransactionID])) > 1
+    )
+)
+
+Repeat Customer Share =DIVIDE([Repeat Customers], [Customers])
+
+Sales MoM Change =
+VAR PriorMonth =
+    CALCULATE([Total Sales], DATEADD(DimDate[Date], -1, MONTH))
+RETURN
+    DIVIDE([Total Sales] - PriorMonth, PriorMonth)
+
+Transactions per Customer =
+DIVIDE([Transactions], [Customers])
